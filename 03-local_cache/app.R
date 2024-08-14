@@ -2,6 +2,7 @@ library(shiny)
 
 source("../generate_gwas_data.R")
 source("../manhattan_plot.R")
+
 shinyOptions(cache = cachem::cache_disk("./app_cache/cache/"))
 
 # UI
