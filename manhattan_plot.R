@@ -26,6 +26,7 @@ create_manhattan_plot <- function(data) {
       panel.border = ggplot2::element_blank(),
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank()
-    )
+    ) +
+    ggplot2::labs(x = "Chromosome", y = "-log10(P-Value)")
   return(p)
 }
