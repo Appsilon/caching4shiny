@@ -37,18 +37,38 @@ Chromosomes are color-coded alternately for visual clarity, and custom axis labe
 
 ## Caching
 
-Caching strategies 
+The repository holds different folders with the same shiny application but implementing different levels of caching.
+The methods below are gradually more complex but increasingly more powerful.
 
 
-### No Cache
+### 01 - No Cache
+Reactive expressions (`reactive()`, `reactiveVal()`, `reactiveValues()`) inherently provide a basic form of caching.
+They store their outputs and only re-execute when their reactive dependencies change.
+This means that if the inputs remain the same, the stored result is reused without recomputation.
 
+See the app in the [no_cache](01-no_cache) folder. 
 
-### Local Cache
+## 02 - Basic Cache
+Introduced in Shiny 1.6.0, `bindCache()` allows developers to cache the results of reactive expressions or render
+functions based on specified keys.
+The cached data is stored in memory, leading to faster retrieval times for repeated computations with the same inputs.
 
+See the app in the [basic_cache](02-basic_cache) folder.
 
-### Redis Caching 
+### 03 - Local Cache
+While `bindCache()` defaults to in-memory caching, it can be configured to use file system caching.
+By setting `shinyOptions(cache = cachem::cache_disk("path/to/cache"))`, cached results are stored on the disk.
+This approach is beneficial for large datasets or when the application restarts, ensuring cached results persist across sessions.
 
+See the app in the [local_cache](03-local_cache) folder.
 
+### 04 - Redis Caching 
+For applications that require shared caching across multiple R sessions or servers, Redis provides a powerful solution.
+Redis allows caching data in a centralized location, enabling different Shiny instances (e.g., on different servers)
+to access the same cache.
+This is particularly useful in load-balanced environments or when scaling Shiny apps.
+
+See the app in the [redis_cache](04-redis_cache) folder.
 
 ## Warming up the cache
 
