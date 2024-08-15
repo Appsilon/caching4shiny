@@ -72,14 +72,121 @@ See the app in the [redis_cache](04-redis_cache) folder.
 
 ## Warming up the cache
 
-Only relevant for app wide / global cache 
+Warming up the cache is only relevant for app-wide or global cache strategies.
+The primary purpose is to pre-load the cache with commonly requested data or plot outputs so that the initial user
+interactions are fast and responsive.
 
-Need to fix the plot dimensions 
+One critical aspect of warming up the cache, especially for Shiny applications with graphical outputs,
+is to fix the plot dimensions.
+Without this, different user browser sizes can result in varying plot dimensions,
+leading to cache misses even if the data is the same.
 
-Run shinyloadtest or test server code 
+To warm up the cache, you can simulate user interactions using tools like **shinyloadtest** or a custom **test server** code.
+This approach will ensure that your cache is populated with expected user data and plot outputs,
+ready to be served without delays when the app is live.
 
+Additionally, remember to clear the cache before running shinyloadtest or any test server simulation.
+This ensures that you're starting with a clean slate, accurately capturing how the cache would behave from a cold start.
+
+More details on the specific approaches are provided below:
 
 ### Shinyloadtest
 
+**Shinyloadtest** is a package that allows you to record and replay user sessions in a Shiny app to simulate multiple user interactions and warm up the cache.
+
+To get started:
+
+1. Install the `shinyloadtest` package:
+   
+   ```R
+   install.packages("shinyloadtest")
+   ```
+
+2. Install `shinycannon`, which is the tool used for replaying recorded sessions.
+You can follow the installation instructions [here](https://rstudio.github.io/shinyloadtest/articles/shinycannon.html).
+
+3. Record a user session for your Shiny app:
+
+   ```R
+   shinyloadtest::record_session("http://127.0.0.1:4153")
+   ```
+Note: You'll need to change the url to match either the one on your local or where it has been deployed.
+
+4. Simulate multiple users interacting with the app and trigger the cache using `shinycannon`:
+
+   ```bash
+   shinycannon recording.log http://127.0.0.1:4153 --workers 5 --loaded-duration-minutes 2 --output-dir run1
+   ```
+
+5. Optional: Process and analyze the results:
+
+   ```R
+   df <- shinyloadtest::load_runs("run1")
+   shinyloadtest::shinyloadtest_report(df, "run1.html")
+   ```
 
 ### Test Server
+
+Alternatively, you can use a **test server** to simulate user interactions and cache warm-up through unit tests.
+This can be done using the `testthat` package, which is commonly used for unit testing in R.
+
+1. Install the `testthat` package:
+
+   ```R
+   install.packages("testthat")
+   ```
+
+2. Example code to simulate interactions with the server and trigger the caching mechanism:
+
+   ```R
+    source("app.R")
+    
+    testServer(server, {
+    # Simulate interaction with n_points = 500000
+    session$setInputs(n_points = 500000)
+    expect_equal(nrow(data()), 500000)
+    output$manhattanPlot  # Simulates rendering of the plot
+    
+    # Simulate interaction with n_points = 1000000
+    session$setInputs(n_points = 1000000)
+    expect_equal(nrow(data()), 1000000)
+    output$manhattanPlot  # Simulates rendering of the plot
+    
+    # Simulate interaction with n_points = 1500000
+    session$setInputs(n_points = 1500000)
+    expect_equal(nrow(data()), 1500000)
+    output$manhattanPlot  # Simulates rendering of the plot
+    
+    # Simulate interaction with n_points = 2000000
+    session$setInputs(n_points = 2000000)
+    expect_equal(nrow(data()), 2000000)
+    output$manhattanPlot  # Simulates rendering of the plot
+    
+    # Simulate interaction with n_points = 2500000
+    session$setInputs(n_points = 2500000)
+    expect_equal(nrow(data()), 2500000)
+    output$manhattanPlot  # Simulates rendering of the plot
+    
+    # Simulate interaction with n_points = 3000000
+    session$setInputs(n_points = 3000000)
+    expect_equal(nrow(data()), 3000000)
+    output$manhattanPlot  # Simulates rendering of the plot
+    })
+
+   ```
+
+This script simulates the app behavior for different `n_points` values and ensures that the cache is populated for these cases.
+You can modify it to cover the most typical interactions in your app.
+
+### Scheduling the Cache Warm-up
+
+To ensure that the cache is always up-to-date, you can schedule the cache warming as a periodic job (e.g., using a cron job or another scheduling tool).
+This scheduled job should:
+
+1. Clear the cache at the start.
+2. Run either the **shinyloadtest** or **test server** code to repopulate the cache.
+3. Optionally, include logging to monitor the cache warm-up process.
+
+By regularly warming up the cache, you can ensure a consistently fast experience for your users, even during peak usage times.
+
+
