@@ -70,6 +70,13 @@ This is particularly useful in load-balanced environments or when scaling Shiny 
 
 See the app in the [redis_cache](04-redis_cache) folder.
 
+Note: You'll need to have Redis running locally to use this code, the easiest way to do so is by using [Docker](https://www.docker.com/)
+and start redis with the command below:
+
+```shell
+docker run --rm --name redisbank -d -p 6379:6379 redis
+```
+
 ## Warming up the cache
 
 Warming up the cache is only relevant for app-wide or global cache strategies.
