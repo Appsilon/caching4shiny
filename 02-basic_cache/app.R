@@ -20,11 +20,11 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   data <- reactive({
     generate_gwas_data(input$n_points)
-  }) |> bindCache(input$n_points)
+  }) |> bindCache(input$n_points, cache = "session")
 
   output$manhattanPlot <- renderPlot({
     create_manhattan_plot(data())
-  }) |> bindCache(input$n_points)
+  }) |> bindCache(input$n_points, cache = "session")
 }
 
 # Run the app
